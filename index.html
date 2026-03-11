@@ -363,6 +363,18 @@
       font-weight: bold;
       color: #1a73e8;
     }
+    
+    .debug-info {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-family: monospace;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -393,6 +405,7 @@
   </div>
   
   <div id="mensagem-login"></div>
+  <div id="debug-login"></div>
   
   <div class="footer-logos">
     <div class="footer-logo-texto logo-gps">GRUPO GPS</div>
@@ -629,13 +642,14 @@ function fazerLogin() {
   document.getElementById('btn-login').style.display = 'none';
   document.getElementById('loading-login').style.display = 'block';
   document.getElementById('mensagem-login').innerHTML = '';
+  document.getElementById('debug-login').innerHTML = '';
   
-  // Usar mode: 'cors' e headers específicos para Apps Script
+  // Tentativa com fetch padrão
   fetch(URL_APPS_SCRIPT, {
     method: 'POST',
-    mode: 'cors',
-    headers: { 
-      'Content-Type': 'application/json',
+    redirect: 'follow',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
     },
     body: JSON.stringify({
       acao: 'login',
@@ -644,38 +658,49 @@ function fazerLogin() {
     })
   })
   .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    return response.json();
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    return response.text();
   })
-  .then(resp => {
+  .then(text => {
+    console.log('Response text:', text);
     document.getElementById('loading-login').style.display = 'none';
     document.getElementById('btn-login').style.display = 'block';
     
-    if (resp.sucesso) {
-      usuarioAtual = usuario;
-      nomeAtual = resp.nome;
-      nivelAtual = resp.nivel;
+    try {
+      const resp = JSON.parse(text);
       
-      localStorage.setItem('registroUsuario', usuario);
-      localStorage.setItem('registroNome', resp.nome);
-      localStorage.setItem('registroNivel', resp.nivel);
-      
-      if (resp.nivel === 'gestao') {
-        mostrarMenuGestao(resp.nome);
+      if (resp.sucesso) {
+        usuarioAtual = usuario;
+        nomeAtual = resp.nome;
+        nivelAtual = resp.nivel;
+        
+        localStorage.setItem('registroUsuario', usuario);
+        localStorage.setItem('registroNome', resp.nome);
+        localStorage.setItem('registroNivel', resp.nivel);
+        
+        if (resp.nivel === 'gestao') {
+          mostrarMenuGestao(resp.nome);
+        } else {
+          mostrarChecklist(resp.nome, 'operacao');
+        }
       } else {
-        mostrarChecklist(resp.nome, 'operacao');
+        mostrarMensagem('login', resp.mensagem || 'Erro no login', 'erro');
       }
-    } else {
-      mostrarMensagem('login', resp.mensagem, 'erro');
+    } catch (e) {
+      console.error('Erro ao parse JSON:', e);
+      document.getElementById('debug-login').innerHTML = 
+        '<div class="debug-info">Resposta não é JSON:<br>' + text.substring(0, 200) + '</div>';
+      mostrarMensagem('login', 'Erro na resposta do servidor', 'erro');
     }
   })
   .catch(err => {
+    console.error('Fetch error:', err);
     document.getElementById('loading-login').style.display = 'none';
     document.getElementById('btn-login').style.display = 'block';
-    console.error('Erro:', err);
-    mostrarMensagem('login', 'Erro de conexão. Verifique sua internet.', 'erro');
+    document.getElementById('debug-login').innerHTML = 
+      '<div class="debug-info">Erro: ' + err.message + '<br>URL: ' + URL_APPS_SCRIPT.substring(0, 50) + '...</div>';
+    mostrarMensagem('login', 'Erro de conexão: ' + err.message, 'erro');
   });
 }
 
@@ -707,23 +732,30 @@ function carregarVisitas() {
   
   fetch(URL_APPS_SCRIPT, {
     method: 'POST',
-    mode: 'cors',
-    headers: { 'Content-Type': 'application/json' },
+    redirect: 'follow',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
+    },
     body: JSON.stringify({
       acao: 'listar',
       local: local
     })
   })
-  .then(r => r.json())
-  .then(resp => {
+  .then(r => r.text())
+  .then(text => {
     document.getElementById('loading-visitas').style.display = 'none';
-    
-    if (resp.sucesso) {
-      document.getElementById('total-visitas').textContent = resp.visitas.length;
-      renderizarTabela(resp.visitas);
-    } else {
+    try {
+      const resp = JSON.parse(text);
+      if (resp.sucesso) {
+        document.getElementById('total-visitas').textContent = resp.visitas.length;
+        renderizarTabela(resp.visitas);
+      } else {
+        document.getElementById('lista-visitas').innerHTML = 
+          '<div class="mensagem erro">Erro: ' + (resp.mensagem || 'Desconhecido') + '</div>';
+      }
+    } catch (e) {
       document.getElementById('lista-visitas').innerHTML = 
-        '<div class="mensagem erro">Erro ao carregar visitas</div>';
+        '<div class="mensagem erro">Erro ao processar resposta</div>';
     }
   })
   .catch(err => {
@@ -820,8 +852,10 @@ function confirmarRegistro() {
   
   fetch(URL_APPS_SCRIPT, {
     method: 'POST',
-    mode: 'cors',
-    headers: { 'Content-Type': 'application/json' },
+    redirect: 'follow',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
+    },
     body: JSON.stringify({
       acao: 'registro',
       usuario: usuarioAtual,
@@ -830,22 +864,27 @@ function confirmarRegistro() {
       nivel: nivelAtual
     })
   })
-  .then(r => r.json())
-  .then(resp => {
+  .then(r => r.text())
+  .then(text => {
     document.getElementById('loading-registro').style.display = 'none';
-    
-    if (resp.sucesso) {
-      mostrarSucesso(resp);
-    } else {
+    try {
+      const resp = JSON.parse(text);
+      if (resp.sucesso) {
+        mostrarSucesso(resp);
+      } else {
+        document.getElementById('btn-registrar').style.display = 'block';
+        document.querySelectorAll('.btn-secundario').forEach(b => b.style.display = 'block');
+        mostrarMensagem('checklist', resp.mensagem || 'Erro ao registrar', 'erro');
+      }
+    } catch (e) {
       document.getElementById('btn-registrar').style.display = 'block';
-      document.querySelectorAll('.btn-secundario').forEach(b => b.style.display = 'block');
-      mostrarMensagem('checklist', resp.mensagem, 'erro');
+      mostrarMensagem('checklist', 'Erro na resposta', 'erro');
     }
   })
   .catch(err => {
     document.getElementById('loading-registro').style.display = 'none';
     document.getElementById('btn-registrar').style.display = 'block';
-    mostrarMensagem('checklist', 'Erro ao registrar', 'erro');
+    mostrarMensagem('checklist', 'Erro de conexão: ' + err.message, 'erro');
   });
 }
 
