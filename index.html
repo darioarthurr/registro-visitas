@@ -363,18 +363,6 @@
       font-weight: bold;
       color: #1a73e8;
     }
-    
-    .debug-info {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      color: #856404;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 5px;
-      font-size: 12px;
-      font-family: monospace;
-      word-break: break-all;
-    }
   </style>
 </head>
 <body>
@@ -405,7 +393,6 @@
   </div>
   
   <div id="mensagem-login"></div>
-  <div id="debug-login"></div>
   
   <div class="footer-logos">
     <div class="footer-logo-texto logo-gps">GRUPO GPS</div>
@@ -586,7 +573,7 @@
 
 <script>
 // ========== CONFIGURAÇÃO ==========
-const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbzgwVdhtMyzngLkNQAsdb9q6Q_B5k_UyDSVIO493EddO-lytQZ7VKsaRnG4tfCjUMwW/exec';
+const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbynSyC2tBnzXvIaGh4D6IE_zWYvxC8YsLA7JFCyToTh3x26n899-Q9We6KSe5Bsh-Ew/exec';
 
 // ========== VARIÁVEIS GLOBAIS ==========
 var usuarioAtual = null;
@@ -642,9 +629,7 @@ function fazerLogin() {
   document.getElementById('btn-login').style.display = 'none';
   document.getElementById('loading-login').style.display = 'block';
   document.getElementById('mensagem-login').innerHTML = '';
-  document.getElementById('debug-login').innerHTML = '';
   
-  // Tentativa com fetch padrão
   fetch(URL_APPS_SCRIPT, {
     method: 'POST',
     redirect: 'follow',
@@ -657,13 +642,8 @@ function fazerLogin() {
       senha: senha
     })
   })
-  .then(response => {
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
-    return response.text();
-  })
+  .then(response => response.text())
   .then(text => {
-    console.log('Response text:', text);
     document.getElementById('loading-login').style.display = 'none';
     document.getElementById('btn-login').style.display = 'block';
     
@@ -685,21 +665,15 @@ function fazerLogin() {
           mostrarChecklist(resp.nome, 'operacao');
         }
       } else {
-        mostrarMensagem('login', resp.mensagem || 'Erro no login', 'erro');
+        mostrarMensagem('login', resp.mensagem, 'erro');
       }
     } catch (e) {
-      console.error('Erro ao parse JSON:', e);
-      document.getElementById('debug-login').innerHTML = 
-        '<div class="debug-info">Resposta não é JSON:<br>' + text.substring(0, 200) + '</div>';
       mostrarMensagem('login', 'Erro na resposta do servidor', 'erro');
     }
   })
   .catch(err => {
-    console.error('Fetch error:', err);
     document.getElementById('loading-login').style.display = 'none';
     document.getElementById('btn-login').style.display = 'block';
-    document.getElementById('debug-login').innerHTML = 
-      '<div class="debug-info">Erro: ' + err.message + '<br>URL: ' + URL_APPS_SCRIPT.substring(0, 50) + '...</div>';
     mostrarMensagem('login', 'Erro de conexão: ' + err.message, 'erro');
   });
 }
@@ -751,7 +725,7 @@ function carregarVisitas() {
         renderizarTabela(resp.visitas);
       } else {
         document.getElementById('lista-visitas').innerHTML = 
-          '<div class="mensagem erro">Erro: ' + (resp.mensagem || 'Desconhecido') + '</div>';
+          '<div class="mensagem erro">Erro ao carregar visitas</div>';
       }
     } catch (e) {
       document.getElementById('lista-visitas').innerHTML = 
@@ -845,6 +819,10 @@ function selecionarTipo(tipo, elemento) {
 function confirmarRegistro() {
   if (!tipoSelecionado) return;
   
+  // PEGA HORA DO CELULAR DO USUÁRIO (BRT)
+  var agora = new Date();
+  var horaCelular = agora.toISOString();
+  
   document.getElementById('btn-registrar').style.display = 'none';
   document.querySelectorAll('.btn-secundario').forEach(b => b.style.display = 'none');
   document.getElementById('loading-registro').style.display = 'block';
@@ -861,7 +839,8 @@ function confirmarRegistro() {
       usuario: usuarioAtual,
       local: local,
       tipo: tipoSelecionado,
-      nivel: nivelAtual
+      nivel: nivelAtual,
+      horaCelular: horaCelular  // ← ENVIA HORA DO CELULAR
     })
   })
   .then(r => r.text())
@@ -900,11 +879,15 @@ function mostrarSucesso(dados) {
     'presenca': '📍 Presença Gestor'
   };
   
+  // Formata data/hora para exibição
+  var dataHora = new Date(dados.timestamp);
+  var dataHoraFormatada = dataHora.toLocaleString('pt-BR');
+  
   document.getElementById('resumo-usuario').textContent = nomeAtual;
   document.getElementById('resumo-nivel').textContent = nivelAtual === 'gestao' ? 'Gestão' : 'Operação';
   document.getElementById('resumo-local').textContent = local.toUpperCase();
   document.getElementById('resumo-tipo').textContent = nomesTipo[dados.tipo] || dados.tipo;
-  document.getElementById('resumo-data').textContent = new Date(dados.timestamp).toLocaleString('pt-BR');
+  document.getElementById('resumo-data').textContent = dataHoraFormatada;
 }
 
 function continuar() {
