@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Visita - GrupoGPS | Multiplan</title>
+  <title>Sistema de Ronda - GrupoGPS | Multiplan</title>
   <style>
     * { box-sizing: border-box; }
     body { 
@@ -26,7 +26,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       padding-bottom: 15px;
       border-bottom: 2px solid #e0e0e0;
       gap: 15px;
@@ -40,6 +40,18 @@
     .logo-gps { color: #003366; }
     .logo-multiplan { color: #228B22; }
     
+    .titulo-sistema {
+      text-align: center;
+      background: #1a73e8;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+    
     h2 { 
       text-align: center; 
       color: #1a73e8;
@@ -52,17 +64,6 @@
       font-size: 13px;
       margin-bottom: 20px;
     }
-    .nivel-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      margin-left: 8px;
-    }
-    .nivel-operacao { background: #e8f0fe; color: #1a73e8; }
-    .nivel-gestao { background: #fce8e6; color: #c5221f; }
     
     .local-box {
       background: #e8f0fe;
@@ -121,18 +122,18 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 15px;
-      font-size: 13px;
+      font-size: 12px;
     }
     .tabela-visitas th {
       background: #f1f3f4;
-      padding: 10px 8px;
+      padding: 8px 6px;
       text-align: left;
       font-weight: 600;
       color: #5f6368;
       border-bottom: 2px solid #dadce0;
     }
     .tabela-visitas td {
-      padding: 10px 8px;
+      padding: 8px 6px;
       border-bottom: 1px solid #e0e0e0;
     }
     .tabela-visitas tr:hover {
@@ -140,15 +141,24 @@
     }
     .tag-tipo {
       display: inline-block;
-      padding: 2px 8px;
+      padding: 2px 6px;
       border-radius: 12px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 500;
     }
-    .tag-cedae { background: #e8f0fe; color: #1a73e8; }
-    .tag-reuso { background: #e6f4ea; color: #137333; }
-    .tag-inspecao { background: #fef3e8; color: #b06000; }
+    .tag-cedae-boia { background: #e8f0fe; color: #1a73e8; }
+    .tag-cedae-rapido { background: #d2e3fc; color: #1557b0; }
+    .tag-reuso-boia { background: #e6f4ea; color: #137333; }
+    .tag-reuso-rapido { background: #ceead6; color: #0d652d; }
+    .tag-ronda { background: #fef3e8; color: #b06000; }
     .tag-presenca { background: #fce8e6; color: #c5221f; }
+    
+    .link-foto {
+      color: #1a73e8;
+      text-decoration: underline;
+      font-size: 11px;
+      cursor: pointer;
+    }
     
     .sem-visitas {
       text-align: center;
@@ -174,12 +184,15 @@
     }
     .checklist-label {
       display: block;
-      margin-bottom: 12px;
-      padding: 15px;
+      margin-bottom: 10px;
+      padding: 18px 15px;
       border: 2px solid #dadce0;
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.2s;
+      font-weight: 600;
+      color: #202124;
+      font-size: 15px;
     }
     .checklist-label:hover {
       border-color: #1a73e8;
@@ -191,20 +204,37 @@
     .checklist-label.selecionado {
       border-color: #1a73e8;
       background: #e8f0fe;
-    }
-    .checklist-titulo {
-      font-weight: 600;
       color: #1a73e8;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
-    .checklist-desc {
-      font-size: 13px;
+    
+    .upload-foto {
+      margin: 20px 0;
+      padding: 20px;
+      border: 2px dashed #dadce0;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .upload-foto.ativo {
+      border-color: #1a73e8;
+      background: #e8f0fe;
+    }
+    .preview-foto {
+      max-width: 100%;
+      max-height: 200px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    .btn-foto {
+      background: #f1f3f4;
       color: #5f6368;
-      margin-top: 4px;
-      margin-left: 28px;
+      border: 2px solid #dadce0;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .btn-foto:hover {
+      background: #e8f0fe;
+      border-color: #1a73e8;
+      color: #1a73e8;
     }
     
     button {
@@ -274,10 +304,6 @@
     }
     .usuario-info {
       font-size: 14px;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 5px;
     }
     .usuario-nome {
       font-weight: 600;
@@ -374,8 +400,7 @@
     <div class="logo-texto logo-multiplan">MULTIPLAN</div>
   </div>
   
-  <h2>Registro de Visita</h2>
-  <p class="subtitulo">Controle de Atividades Técnicas</p>
+  <div class="titulo-sistema">SISTEMA DE RONDA MANUTENÇÃO VIVANTE</div>
   
   <div class="local-box">
     <div class="local-label">Local Detectado</div>
@@ -407,13 +432,13 @@
     <div class="logo-texto logo-multiplan">MULTIPLAN</div>
   </div>
   
+  <div class="titulo-sistema">SISTEMA DE RONDA MANUTENÇÃO VIVANTE</div>
+  
   <h2>Menu Gestão</h2>
-  <p class="subtitulo">Selecione uma opção</p>
   
   <div class="usuario-logado">
     <div class="usuario-info">
-      <span id="nome-gestor-logado">-</span>
-      <span class="nivel-badge nivel-gestao">Gestão</span>
+      <span class="usuario-nome" id="nome-gestor-logado">-</span>
     </div>
     <span class="btn-trocar" onclick="trocarUsuario()">Sair</span>
   </div>
@@ -468,15 +493,16 @@
   </div>
 </div>
 
-<!-- ========== TELA 3: CHECK-LIST ========== -->
+<!-- ========== TELA 3: CHECK-LIST OPERAÇÃO ========== -->
 <div class="container escondido" id="tela-checklist">
   <div class="header-logos">
     <div class="logo-texto logo-gps">GRUPO GPS</div>
     <div class="logo-texto logo-multiplan">MULTIPLAN</div>
   </div>
   
+  <div class="titulo-sistema">SISTEMA DE RONDA MANUTENÇÃO VIVANTE</div>
+  
   <h2>Tipo de Atividade</h2>
-  <p class="subtitulo">Selecione o tipo de trabalho</p>
   
   <div class="local-box" style="background: #fef3e8; border-color: #f9ab00;">
     <div class="local-label">Local da Visita</div>
@@ -485,30 +511,46 @@
   
   <div class="usuario-logado">
     <div class="usuario-info">
-      <span id="nome-operacao-logado">-</span>
-      <span class="nivel-badge nivel-operacao" id="badge-nivel">Operação</span>
+      <span class="usuario-nome" id="nome-operacao-logado">-</span>
     </div>
     <span class="btn-trocar" onclick="trocarUsuario()">Sair</span>
   </div>
   
   <div class="checklist" id="checklist-container">
-    <label class="checklist-label" onclick="selecionarTipo('cedae', this)">
-      <input type="radio" name="tipo" value="cedae">
-      <div class="checklist-titulo">💧 Enchendo com CEDAE</div>
-      <div class="checklist-desc">Abastecimento de água via rede CEDAE</div>
+    <label class="checklist-label" onclick="selecionarTipo('cedae_boia', this)">
+      <input type="radio" name="tipo" value="cedae_boia">
+      Abastecimento CEDAE por boia
     </label>
     
-    <label class="checklist-label" onclick="selecionarTipo('reuso', this)">
-      <input type="radio" name="tipo" value="reuso">
-      <div class="checklist-titulo">♻️ Reuso de Água</div>
-      <div class="checklist-desc">Utilização de sistema de reuso/reaproveitamento</div>
+    <label class="checklist-label" onclick="selecionarTipo('cedae_rapido', this)">
+      <input type="radio" name="tipo" value="cedae_rapido">
+      Abastecimento CEDAE por enchimento rápido
     </label>
     
-    <label class="checklist-label" onclick="selecionarTipo('inspecao', this)">
-      <input type="radio" name="tipo" value="inspecao">
-      <div class="checklist-titulo">🔍 Apenas Inspeção</div>
-      <div class="checklist-desc">Visita técnica sem operação de abastecimento</div>
+    <label class="checklist-label" onclick="selecionarTipo('reuso_boia', this)">
+      <input type="radio" name="tipo" value="reuso_boia">
+      Abastecimento REUSO por boia
     </label>
+    
+    <label class="checklist-label" onclick="selecionarTipo('reuso_rapido', this)">
+      <input type="radio" name="tipo" value="reuso_rapido">
+      Abastecimento REUSO por enchimento rápido
+    </label>
+    
+    <label class="checklist-label" onclick="selecionarTipo('ronda', this)">
+      <input type="radio" name="tipo" value="ronda">
+      Ronda de inspeção
+    </label>
+  </div>
+  
+  <!-- UPLOAD DE FOTO (aparece só para ronda) -->
+  <div class="upload-foto escondido" id="upload-foto">
+    <div>📷 Anexar foto da inspeção</div>
+    <input type="file" id="input-foto" accept="image/*" capture="environment" style="display:none;">
+    <button class="btn-foto" onclick="document.getElementById('input-foto').click()">
+      Tirar Foto / Selecionar
+    </button>
+    <img id="preview-foto" class="preview-foto escondido">
   </div>
   
   <button onclick="confirmarRegistro()" id="btn-registrar" disabled style="background: #dadce0;">
@@ -529,12 +571,62 @@
   </div>
 </div>
 
+<!-- ========== TELA 3B: CHECK-LIST GESTÃO (PRESENÇA) ========== -->
+<div class="container escondido" id="tela-checklist-gestao">
+  <div class="header-logos">
+    <div class="logo-texto logo-gps">GRUPO GPS</div>
+    <div class="logo-texto logo-multiplan">MULTIPLAN</div>
+  </div>
+  
+  <div class="titulo-sistema">SISTEMA DE RONDA MANUTENÇÃO VIVANTE</div>
+  
+  <h2>Registrar Presença</h2>
+  
+  <div class="local-box" style="background: #fce8e6; border-color: #c5221f;">
+    <div class="local-label">Local da Visita</div>
+    <div class="local-nome" id="checklist-local-gestao" style="color: #c5221f;">-</div>
+  </div>
+  
+  <div class="usuario-logado">
+    <div class="usuario-info">
+      <span class="usuario-nome" id="nome-gestao-checklist">-</span>
+    </div>
+    <span class="btn-trocar" onclick="trocarUsuario()">Sair</span>
+  </div>
+  
+  <div class="checklist">
+    <label class="checklist-label selecionado" style="background: #e8f0fe; border-color: #1a73e8; color: #1a73e8;">
+      <input type="radio" name="tipo" value="presenca" checked>
+      📍 Presença Gestor
+    </label>
+  </div>
+  
+  <button onclick="confirmarRegistroGestao()" id="btn-registrar-gestao" style="background: #1a73e8;">
+    Confirmar Presença
+  </button>
+  <button class="btn-secundario" onclick="voltarMenuGestao()">Voltar</button>
+  
+  <div class="loading" id="loading-registro-gestao">
+    <div class="spinner"></div>
+    Registrando presença...
+  </div>
+  
+  <div id="mensagem-checklist-gestao"></div>
+  
+  <div class="footer-logos">
+    <div class="footer-logo-texto logo-gps">GRUPO GPS</div>
+    <div class="footer-logo-texto logo-multiplan">MULTIPLAN</div>
+  </div>
+</div>
+
 <!-- ========== TELA 4: SUCESSO ========== -->
 <div class="container escondido" id="tela-sucesso">
   <div class="header-logos">
     <div class="logo-texto logo-gps">GRUPO GPS</div>
     <div class="logo-texto logo-multiplan">MULTIPLAN</div>
   </div>
+  
+  <div class="titulo-sistema">SISTEMA DE RONDA MANUTENÇÃO VIVANTE</div>
   
   <div class="icone-sucesso">✅</div>
   <h2 class="titulo-sucesso">Registro Concluído!</h2>
@@ -543,10 +635,6 @@
     <div class="resumo-item">
       <div class="resumo-label">Usuário</div>
       <div class="resumo-valor" id="resumo-usuario">-</div>
-    </div>
-    <div class="resumo-item">
-      <div class="resumo-label">Nível</div>
-      <div class="resumo-valor" id="resumo-nivel">-</div>
     </div>
     <div class="resumo-item">
       <div class="resumo-label">Local</div>
@@ -573,13 +661,14 @@
 
 <script>
 // ========== CONFIGURAÇÃO ==========
-const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbynSyC2tBnzXvIaGh4D6IE_zWYvxC8YsLA7JFCyToTh3x26n899-Q9We6KSe5Bsh-Ew/exec';
+const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbzd_c6nvFM8yJHBwk9YqVZSzXe7A8tzUjhfjUodV2DSCXuVZ8viRzr6TtKIWgA5-p2q/exec';
 
 // ========== VARIÁVEIS GLOBAIS ==========
 var usuarioAtual = null;
 var nomeAtual = null;
 var nivelAtual = null;
 var tipoSelecionado = null;
+var fotoBase64 = null;
 
 // ========== INICIALIZAÇÃO ==========
 const urlParams = new URLSearchParams(window.location.search);
@@ -593,6 +682,7 @@ if (!local) {
 } else {
   document.getElementById('nome-local').textContent = local.toUpperCase();
   document.getElementById('checklist-local').textContent = local.toUpperCase();
+  document.getElementById('checklist-local-gestao').textContent = local.toUpperCase();
   document.getElementById('visualizar-local').textContent = 'Local: ' + local.toUpperCase();
 }
 
@@ -614,6 +704,9 @@ window.onload = function() {
   } else {
     document.getElementById('usuario').focus();
   }
+  
+  // Setup input de foto
+  document.getElementById('input-foto').addEventListener('change', handleFoto);
 };
 
 // ========== LOGIN ==========
@@ -686,7 +779,10 @@ function mostrarMenuGestao(nome) {
 }
 
 function irParaPresenca() {
-  mostrarChecklist(nomeAtual, 'gestao');
+  esconderTodas();
+  document.getElementById('tela-checklist-gestao').classList.remove('escondido');
+  document.getElementById('nome-gestao-checklist').textContent = nomeAtual;
+  tipoSelecionado = 'presenca';
 }
 
 function irParaVisualizar() {
@@ -751,22 +847,30 @@ function renderizarTabela(visitas) {
     '<th>Hora</th>' +
     '<th>Usuário</th>' +
     '<th>Tipo</th>' +
+    '<th>Foto</th>' +
     '</tr>';
   
   visitas.forEach(v => {
     const hora = new Date(v.data).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
     const tagClass = 'tag-' + v.tipo;
     const tipoTexto = {
-      'cedae': 'CEDAE',
-      'reuso': 'Reuso',
-      'inspecao': 'Inspeção',
+      'cedae_boia': 'CEDAE Boia',
+      'cedae_rapido': 'CEDAE Rápido',
+      'reuso_boia': 'REUSO Boia',
+      'reuso_rapido': 'REUSO Rápido',
+      'ronda': 'Ronda',
       'presenca': 'Presença'
     }[v.tipo] || v.tipo;
+    
+    const fotoLink = v.foto ? 
+      '<a href="' + v.foto + '" target="_blank" class="link-foto">📷 Ver</a>' : 
+      '-';
     
     html += '<tr>' +
       '<td>' + hora + '</td>' +
       '<td>' + v.nome + '</td>' +
       '<td><span class="tag-tipo ' + tagClass + '">' + tipoTexto + '</span></td>' +
+      '<td>' + fotoLink + '</td>' +
       '</tr>';
   });
   
@@ -774,36 +878,22 @@ function renderizarTabela(visitas) {
   document.getElementById('lista-visitas').innerHTML = html;
 }
 
-// ========== CHECK-LIST ==========
+// ========== CHECK-LIST OPERAÇÃO ==========
 function mostrarChecklist(nome, nivel) {
   esconderTodas();
   document.getElementById('tela-checklist').classList.remove('escondido');
   
   document.getElementById('nome-operacao-logado').textContent = nome;
-  document.getElementById('badge-nivel').textContent = nivel === 'gestao' ? 'Gestão' : 'Operação';
-  document.getElementById('badge-nivel').className = 'nivel-badge nivel-' + nivel;
   
-  // Reset checklist
+  // Reset
   tipoSelecionado = null;
+  fotoBase64 = null;
   document.querySelectorAll('.checklist-label').forEach(l => l.classList.remove('selecionado'));
   document.getElementById('btn-registrar').disabled = true;
   document.getElementById('btn-registrar').style.background = '#dadce0';
-  
-  // Se for gestão, adiciona opção "Presença"
-  const checklistContainer = document.getElementById('checklist-container');
-  const existing = document.getElementById('opcao-presenca');
-  
-  if (nivel === 'gestao' && !existing) {
-    const presencaHtml = 
-      '<label class="checklist-label" id="opcao-presenca" onclick="selecionarTipo(\'presenca\', this)">' +
-      '<input type="radio" name="tipo" value="presenca">' +
-      '<div class="checklist-titulo">📍 Presença Gestor</div>' +
-      '<div class="checklist-desc">Registro de presença no local</div>' +
-      '</label>';
-    checklistContainer.insertAdjacentHTML('afterbegin', presencaHtml);
-  } else if (nivel !== 'gestao' && existing) {
-    existing.remove();
-  }
+  document.getElementById('upload-foto').classList.add('escondido');
+  document.getElementById('preview-foto').classList.add('escondido');
+  document.getElementById('upload-foto').classList.remove('ativo');
 }
 
 function selecionarTipo(tipo, elemento) {
@@ -814,19 +904,61 @@ function selecionarTipo(tipo, elemento) {
   const btn = document.getElementById('btn-registrar');
   btn.disabled = false;
   btn.style.background = '#1a73e8';
+  
+  // Mostra upload de foto apenas para ronda
+  if (tipo === 'ronda') {
+    document.getElementById('upload-foto').classList.remove('escondido');
+  } else {
+    document.getElementById('upload-foto').classList.add('escondido');
+    fotoBase64 = null;
+  }
+}
+
+function handleFoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Foto muito grande. Máximo 5MB.');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    fotoBase64 = e.target.result;
+    document.getElementById('preview-foto').src = fotoBase64;
+    document.getElementById('preview-foto').classList.remove('escondido');
+    document.getElementById('upload-foto').classList.add('ativo');
+  };
+  reader.readAsDataURL(file);
 }
 
 function confirmarRegistro() {
   if (!tipoSelecionado) return;
   
-  // PEGA HORA DO CELULAR DO USUÁRIO (BRT)
+  // Valida foto para ronda
+  if (tipoSelecionado === 'ronda' && !fotoBase64) {
+    mostrarMensagem('checklist', 'Obrigatório tirar foto para ronda de inspeção', 'erro');
+    return;
+  }
+  
   var agora = new Date();
   var horaCelular = agora.toISOString();
   
   document.getElementById('btn-registrar').style.display = 'none';
-  document.querySelectorAll('.btn-secundario').forEach(b => b.style.display = 'none');
+  document.querySelector('.btn-secundario').style.display = 'none';
   document.getElementById('loading-registro').style.display = 'block';
   document.getElementById('mensagem-checklist').innerHTML = '';
+  
+  var payload = {
+    acao: 'registro',
+    usuario: usuarioAtual,
+    local: local,
+    tipo: tipoSelecionado,
+    nivel: nivelAtual,
+    horaCelular: horaCelular,
+    foto: fotoBase64 || null
+  };
   
   fetch(URL_APPS_SCRIPT, {
     method: 'POST',
@@ -834,14 +966,7 @@ function confirmarRegistro() {
     headers: {
       'Content-Type': 'text/plain;charset=utf-8',
     },
-    body: JSON.stringify({
-      acao: 'registro',
-      usuario: usuarioAtual,
-      local: local,
-      tipo: tipoSelecionado,
-      nivel: nivelAtual,
-      horaCelular: horaCelular  // ← ENVIA HORA DO CELULAR
-    })
+    body: JSON.stringify(payload)
   })
   .then(r => r.text())
   .then(text => {
@@ -852,7 +977,7 @@ function confirmarRegistro() {
         mostrarSucesso(resp);
       } else {
         document.getElementById('btn-registrar').style.display = 'block';
-        document.querySelectorAll('.btn-secundario').forEach(b => b.style.display = 'block');
+        document.querySelector('.btn-secundario').style.display = 'block';
         mostrarMensagem('checklist', resp.mensagem || 'Erro ao registrar', 'erro');
       }
     } catch (e) {
@@ -867,24 +992,74 @@ function confirmarRegistro() {
   });
 }
 
+// ========== REGISTRO GESTÃO ==========
+function confirmarRegistroGestao() {
+  var agora = new Date();
+  var horaCelular = agora.toISOString();
+  
+  document.getElementById('btn-registrar-gestao').style.display = 'none';
+  document.querySelector('#tela-checklist-gestao .btn-secundario').style.display = 'none';
+  document.getElementById('loading-registro-gestao').style.display = 'block';
+  document.getElementById('mensagem-checklist-gestao').innerHTML = '';
+  
+  fetch(URL_APPS_SCRIPT, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
+    },
+    body: JSON.stringify({
+      acao: 'registro',
+      usuario: usuarioAtual,
+      local: local,
+      tipo: 'presenca',
+      nivel: 'gestao',
+      horaCelular: horaCelular,
+      foto: null
+    })
+  })
+  .then(r => r.text())
+  .then(text => {
+    document.getElementById('loading-registro-gestao').style.display = 'none';
+    try {
+      const resp = JSON.parse(text);
+      if (resp.sucesso) {
+        mostrarSucesso(resp);
+      } else {
+        document.getElementById('btn-registrar-gestao').style.display = 'block';
+        document.querySelector('#tela-checklist-gestao .btn-secundario').style.display = 'block';
+        mostrarMensagem('checklist-gestao', resp.mensagem || 'Erro ao registrar', 'erro');
+      }
+    } catch (e) {
+      document.getElementById('btn-registrar-gestao').style.display = 'block';
+      mostrarMensagem('checklist-gestao', 'Erro na resposta', 'erro');
+    }
+  })
+  .catch(err => {
+    document.getElementById('loading-registro-gestao').style.display = 'none';
+    document.getElementById('btn-registrar-gestao').style.display = 'block';
+    mostrarMensagem('checklist-gestao', 'Erro de conexão: ' + err.message, 'erro');
+  });
+}
+
 // ========== SUCESSO ==========
 function mostrarSucesso(dados) {
   esconderTodas();
   document.getElementById('tela-sucesso').classList.remove('escondido');
   
   const nomesTipo = {
-    'cedae': '💧 Enchendo com CEDAE',
-    'reuso': '♻️ Reuso de Água',
-    'inspecao': '🔍 Apenas Inspeção',
-    'presenca': '📍 Presença Gestor'
+    'cedae_boia': 'Abastecimento CEDAE por boia',
+    'cedae_rapido': 'Abastecimento CEDAE por enchimento rápido',
+    'reuso_boia': 'Abastecimento REUSO por boia',
+    'reuso_rapido': 'Abastecimento REUSO por enchimento rápido',
+    'ronda': 'Ronda de inspeção',
+    'presenca': 'Presença Gestor'
   };
   
-  // Formata data/hora para exibição
   var dataHora = new Date(dados.timestamp);
   var dataHoraFormatada = dataHora.toLocaleString('pt-BR');
   
   document.getElementById('resumo-usuario').textContent = nomeAtual;
-  document.getElementById('resumo-nivel').textContent = nivelAtual === 'gestao' ? 'Gestão' : 'Operação';
   document.getElementById('resumo-local').textContent = local.toUpperCase();
   document.getElementById('resumo-tipo').textContent = nomesTipo[dados.tipo] || dados.tipo;
   document.getElementById('resumo-data').textContent = dataHoraFormatada;
@@ -912,7 +1087,9 @@ function trocarUsuario() {
 
 function mostrarMensagem(tela, texto, tipo) {
   const div = document.getElementById('mensagem-' + tela);
-  div.innerHTML = '<div class="mensagem ' + tipo + '">' + texto + '</div>';
+  if (div) {
+    div.innerHTML = '<div class="mensagem ' + tipo + '">' + texto + '</div>';
+  }
 }
 
 // Enter nos campos
