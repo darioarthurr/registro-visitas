@@ -22,7 +22,6 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     
-    /* ========== LOGOS ========== */
     .header-logos {
       display: flex;
       justify-content: space-between;
@@ -65,7 +64,6 @@
     .nivel-operacao { background: #e8f0fe; color: #1a73e8; }
     .nivel-gestao { background: #fce8e6; color: #c5221f; }
     
-    /* LOCAL */
     .local-box {
       background: #e8f0fe;
       border-left: 4px solid #1a73e8;
@@ -87,7 +85,6 @@
       margin-top: 5px;
     }
     
-    /* MENU GESTÃO */
     .menu-gestao {
       display: grid;
       gap: 15px;
@@ -120,7 +117,6 @@
       margin-top: 4px;
     }
     
-    /* TABELA DE VISITAS */
     .tabela-visitas {
       width: 100%;
       border-collapse: collapse;
@@ -160,7 +156,6 @@
       color: #5f6368;
     }
     
-    /* FORMULÁRIOS */
     input {
       width: 100%;
       padding: 14px;
@@ -174,7 +169,6 @@
       border-color: #1a73e8;
     }
     
-    /* CHECK-LIST */
     .checklist {
       margin: 15px 0;
     }
@@ -213,7 +207,6 @@
       margin-left: 28px;
     }
     
-    /* BOTÕES */
     button {
       width: 100%;
       padding: 16px;
@@ -242,7 +235,6 @@
       margin-bottom: 10px;
     }
     
-    /* MENSAGENS */
     .mensagem {
       margin-top: 15px;
       padding: 12px;
@@ -254,7 +246,6 @@
     .sucesso { background: #e6f4ea; color: #137333; }
     .info { background: #e8f0fe; color: #1a73e8; }
     
-    /* LOADING */
     .loading {
       display: none;
       text-align: center;
@@ -272,7 +263,6 @@
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    /* USUÁRIO LOGADO */
     .usuario-logado {
       background: #e6f4ea;
       padding: 12px;
@@ -300,10 +290,8 @@
       cursor: pointer;
     }
     
-    /* ESCONDIDO */
     .escondido { display: none; }
     
-    /* FOOTER */
     .footer-logos {
       display: flex;
       justify-content: center;
@@ -320,7 +308,6 @@
       opacity: 0.8;
     }
     
-    /* RESUMO */
     .resumo-box {
       background: #f8f9fa;
       padding: 20px;
@@ -358,7 +345,6 @@
       text-align: center;
     }
     
-    /* INFO BOX */
     .info-box {
       background: #e8f0fe;
       border-radius: 8px;
@@ -469,9 +455,7 @@
     <div class="info-box-valor" id="total-visitas">0</div>
   </div>
   
-  <div id="lista-visitas">
-    <!-- Tabela carregada via JS -->
-  </div>
+  <div id="lista-visitas"></div>
   
   <div class="loading" id="loading-visitas">
     <div class="spinner"></div>
@@ -484,7 +468,7 @@
   </div>
 </div>
 
-<!-- ========== TELA 3: CHECK-LIST OPERAÇÃO ========== -->
+<!-- ========== TELA 3: CHECK-LIST ========== -->
 <div class="container escondido" id="tela-checklist">
   <div class="header-logos">
     <div class="logo-texto logo-gps">GRUPO GPS</div>
@@ -507,7 +491,7 @@
     <span class="btn-trocar" onclick="trocarUsuario()">Sair</span>
   </div>
   
-  <div class="checklist">
+  <div class="checklist" id="checklist-container">
     <label class="checklist-label" onclick="selecionarTipo('cedae', this)">
       <input type="radio" name="tipo" value="cedae">
       <div class="checklist-titulo">💧 Enchendo com CEDAE</div>
@@ -589,12 +573,12 @@
 
 <script>
 // ========== CONFIGURAÇÃO ==========
-const URL_APPS_SCRIPT = https://script.google.com/macros/s/AKfycbzkeIIQ8zV0JrmYh7RvNLDpAkm61HmXjb8dC3JQ0KJEsbsKNyr99tub_60xvKKQo2Qz/exec;
+const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbzkeIIQ8zV0JrmYh7RvNLDpAkm61HmXjb8dC3JQ0KJEsbsKNyr99tub_60xvKKQo2Qz/exec';
 
 // ========== VARIÁVEIS GLOBAIS ==========
 var usuarioAtual = null;
 var nomeAtual = null;
-var nivelAtual = null; // 'operacao' ou 'gestao'
+var nivelAtual = null;
 var tipoSelecionado = null;
 
 // ========== INICIALIZAÇÃO ==========
@@ -646,16 +630,25 @@ function fazerLogin() {
   document.getElementById('loading-login').style.display = 'block';
   document.getElementById('mensagem-login').innerHTML = '';
   
+  // Usar mode: 'cors' e headers específicos para Apps Script
   fetch(URL_APPS_SCRIPT, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    mode: 'cors',
+    headers: { 
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
       acao: 'login',
       usuario: usuario,
       senha: senha
     })
   })
-  .then(r => r.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
   .then(resp => {
     document.getElementById('loading-login').style.display = 'none';
     document.getElementById('btn-login').style.display = 'block';
@@ -681,15 +674,14 @@ function fazerLogin() {
   .catch(err => {
     document.getElementById('loading-login').style.display = 'none';
     document.getElementById('btn-login').style.display = 'block';
-    mostrarMensagem('login', 'Erro de conexão', 'erro');
+    console.error('Erro:', err);
+    mostrarMensagem('login', 'Erro de conexão. Verifique sua internet.', 'erro');
   });
 }
 
 // ========== MENU GESTÃO ==========
 function mostrarMenuGestao(nome) {
-  document.getElementById('tela-login').classList.add('escondido');
-  document.getElementById('tela-checklist').classList.add('escondido');
-  document.getElementById('tela-visualizar').classList.add('escondido');
+  esconderTodas();
   document.getElementById('tela-menu-gestao').classList.remove('escondido');
   document.getElementById('nome-gestor-logado').textContent = nome;
 }
@@ -699,7 +691,7 @@ function irParaPresenca() {
 }
 
 function irParaVisualizar() {
-  document.getElementById('tela-menu-gestao').classList.add('escondido');
+  esconderTodas();
   document.getElementById('tela-visualizar').classList.remove('escondido');
   carregarVisitas();
 }
@@ -715,6 +707,7 @@ function carregarVisitas() {
   
   fetch(URL_APPS_SCRIPT, {
     method: 'POST',
+    mode: 'cors',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       acao: 'listar',
@@ -777,35 +770,34 @@ function renderizarTabela(visitas) {
 
 // ========== CHECK-LIST ==========
 function mostrarChecklist(nome, nivel) {
-  document.getElementById('tela-login').classList.add('escondido');
-  document.getElementById('tela-menu-gestao').classList.add('escondido');
-  document.getElementById('tela-visualizar').classList.add('escondido');
+  esconderTodas();
   document.getElementById('tela-checklist').classList.remove('escondido');
   
   document.getElementById('nome-operacao-logado').textContent = nome;
   document.getElementById('badge-nivel').textContent = nivel === 'gestao' ? 'Gestão' : 'Operação';
   document.getElementById('badge-nivel').className = 'nivel-badge nivel-' + nivel;
   
-  // Se for gestão, adiciona opção "Presença"
-  if (nivel === 'gestao') {
-    const checklist = document.querySelector('.checklist');
-    // Remove opção presença se já existir
-    const existing = document.getElementById('opcao-presenca');
-    if (!existing) {
-      const presencaHtml = 
-        '<label class="checklist-label" id="opcao-presenca" onclick="selecionarTipo(\'presenca\', this)">' +
-        '<input type="radio" name="tipo" value="presenca">' +
-        '<div class="checklist-titulo">📍 Presença Gestor</div>' +
-        '<div class="checklist-desc">Registro de presença no local</div>' +
-        '</label>';
-      checklist.insertAdjacentHTML('afterbegin', presencaHtml);
-    }
-  }
-  
+  // Reset checklist
   tipoSelecionado = null;
   document.querySelectorAll('.checklist-label').forEach(l => l.classList.remove('selecionado'));
   document.getElementById('btn-registrar').disabled = true;
   document.getElementById('btn-registrar').style.background = '#dadce0';
+  
+  // Se for gestão, adiciona opção "Presença"
+  const checklistContainer = document.getElementById('checklist-container');
+  const existing = document.getElementById('opcao-presenca');
+  
+  if (nivel === 'gestao' && !existing) {
+    const presencaHtml = 
+      '<label class="checklist-label" id="opcao-presenca" onclick="selecionarTipo(\'presenca\', this)">' +
+      '<input type="radio" name="tipo" value="presenca">' +
+      '<div class="checklist-titulo">📍 Presença Gestor</div>' +
+      '<div class="checklist-desc">Registro de presença no local</div>' +
+      '</label>';
+    checklistContainer.insertAdjacentHTML('afterbegin', presencaHtml);
+  } else if (nivel !== 'gestao' && existing) {
+    existing.remove();
+  }
 }
 
 function selecionarTipo(tipo, elemento) {
@@ -828,6 +820,7 @@ function confirmarRegistro() {
   
   fetch(URL_APPS_SCRIPT, {
     method: 'POST',
+    mode: 'cors',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       acao: 'registro',
@@ -858,7 +851,7 @@ function confirmarRegistro() {
 
 // ========== SUCESSO ==========
 function mostrarSucesso(dados) {
-  document.getElementById('tela-checklist').classList.add('escondido');
+  esconderTodas();
   document.getElementById('tela-sucesso').classList.remove('escondido');
   
   const nomesTipo = {
@@ -879,12 +872,15 @@ function continuar() {
   if (nivelAtual === 'gestao') {
     mostrarMenuGestao(nomeAtual);
   } else {
-    // Operação: volta para check-list limpo
     mostrarChecklist(nomeAtual, 'operacao');
   }
 }
 
 // ========== UTILIDADES ==========
+function esconderTodas() {
+  document.querySelectorAll('.container').forEach(c => c.classList.add('escondido'));
+}
+
 function trocarUsuario() {
   localStorage.removeItem('registroUsuario');
   localStorage.removeItem('registroNome');
