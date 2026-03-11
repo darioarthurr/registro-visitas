@@ -146,10 +146,10 @@
       font-size: 10px;
       font-weight: 500;
     }
-    .tag-cedae-boia { background: #e8f0fe; color: #1a73e8; }
-    .tag-cedae-rapido { background: #d2e3fc; color: #1557b0; }
-    .tag-reuso-boia { background: #e6f4ea; color: #137333; }
-    .tag-reuso-rapido { background: #ceead6; color: #0d652d; }
+    .tag-cedae_boia { background: #e8f0fe; color: #1a73e8; }
+    .tag-cedae_rapido { background: #d2e3fc; color: #1557b0; }
+    .tag-reuso_boia { background: #e6f4ea; color: #137333; }
+    .tag-reuso_rapido { background: #ceead6; color: #0d652d; }
     .tag-ronda { background: #fef3e8; color: #b06000; }
     .tag-presenca { background: #fce8e6; color: #c5221f; }
     
@@ -214,9 +214,13 @@
       border-radius: 10px;
       text-align: center;
     }
+    .upload-foto.obrigatorio {
+      border-color: #c5221f;
+      background: #fef7f6;
+    }
     .upload-foto.ativo {
-      border-color: #1a73e8;
-      background: #e8f0fe;
+      border-color: #137333;
+      background: #e6f4ea;
     }
     .preview-foto {
       max-width: 100%;
@@ -235,6 +239,17 @@
       background: #e8f0fe;
       border-color: #1a73e8;
       color: #1a73e8;
+    }
+    .texto-obrigatorio {
+      color: #c5221f;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .texto-opcional {
+      color: #5f6368;
+      font-size: 12px;
+      margin-top: 8px;
     }
     
     button {
@@ -444,7 +459,7 @@
   </div>
   
   <div class="menu-gestao">
-    <div class="menu-item" onclick="irParaPresenca()">
+    <div class="menu-item" onclick="irParaChecklistGestao()">
       <div class="menu-icon">📍</div>
       <div class="menu-titulo">Registrar Presença</div>
       <div class="menu-desc">Registrar visita no local atual</div>
@@ -543,14 +558,15 @@
     </label>
   </div>
   
-  <!-- UPLOAD DE FOTO (aparece só para ronda) -->
-  <div class="upload-foto escondido" id="upload-foto">
-    <div>📷 Anexar foto da inspeção</div>
+  <!-- UPLOAD DE FOTO (OBRIGATÓRIO PARA OPERAÇÃO) -->
+  <div class="upload-foto obrigatorio" id="upload-foto">
+    <div>📷 Anexar foto <span id="texto-foto-obrigatorio">(OBRIGATÓRIO)</span></div>
     <input type="file" id="input-foto" accept="image/*" capture="environment" style="display:none;">
     <button class="btn-foto" onclick="document.getElementById('input-foto').click()">
       Tirar Foto / Selecionar
     </button>
     <img id="preview-foto" class="preview-foto escondido">
+    <div id="status-foto" class="texto-obrigatorio">Foto obrigatória para todos os registros</div>
   </div>
   
   <button onclick="confirmarRegistro()" id="btn-registrar" disabled style="background: #dadce0;">
@@ -571,7 +587,7 @@
   </div>
 </div>
 
-<!-- ========== TELA 3B: CHECK-LIST GESTÃO (PRESENÇA) ========== -->
+<!-- ========== TELA 3B: CHECK-LIST GESTÃO ========== -->
 <div class="container escondido" id="tela-checklist-gestao">
   <div class="header-logos">
     <div class="logo-texto logo-gps">GRUPO GPS</div>
@@ -599,6 +615,17 @@
       <input type="radio" name="tipo" value="presenca" checked>
       📍 Presença Gestor
     </label>
+  </div>
+  
+  <!-- UPLOAD DE FOTO (OPCIONAL PARA GESTÃO) -->
+  <div class="upload-foto" id="upload-foto-gestao">
+    <div>📷 Anexar foto <span id="texto-foto-gestao">(OPCIONAL)</span></div>
+    <input type="file" id="input-foto-gestao" accept="image/*" capture="environment" style="display:none;">
+    <button class="btn-foto" onclick="document.getElementById('input-foto-gestao').click()">
+      Tirar Foto / Selecionar
+    </button>
+    <img id="preview-foto-gestao" class="preview-foto escondido">
+    <div id="status-foto-gestao" class="texto-opcional">Foto opcional</div>
   </div>
   
   <button onclick="confirmarRegistroGestao()" id="btn-registrar-gestao" style="background: #1a73e8;">
@@ -705,8 +732,13 @@ window.onload = function() {
     document.getElementById('usuario').focus();
   }
   
-  // Setup input de foto
-  document.getElementById('input-foto').addEventListener('change', handleFoto);
+  // Setup inputs de foto
+  document.getElementById('input-foto').addEventListener('change', function(e) {
+    handleFoto(e, 'preview-foto', 'upload-foto', 'status-foto', 'texto-foto-obrigatorio');
+  });
+  document.getElementById('input-foto-gestao').addEventListener('change', function(e) {
+    handleFoto(e, 'preview-foto-gestao', 'upload-foto-gestao', 'status-foto-gestao', 'texto-foto-gestao');
+  });
 };
 
 // ========== LOGIN ==========
@@ -778,11 +810,17 @@ function mostrarMenuGestao(nome) {
   document.getElementById('nome-gestor-logado').textContent = nome;
 }
 
-function irParaPresenca() {
+function irParaChecklistGestao() {
   esconderTodas();
   document.getElementById('tela-checklist-gestao').classList.remove('escondido');
   document.getElementById('nome-gestao-checklist').textContent = nomeAtual;
   tipoSelecionado = 'presenca';
+  // Reset foto gestão
+  fotoBase64 = null;
+  document.getElementById('preview-foto-gestao').classList.add('escondido');
+  document.getElementById('upload-foto-gestao').classList.remove('ativo');
+  document.getElementById('status-foto-gestao').textContent = 'Foto opcional';
+  document.getElementById('status-foto-gestao').className = 'texto-opcional';
 }
 
 function irParaVisualizar() {
@@ -891,9 +929,14 @@ function mostrarChecklist(nome, nivel) {
   document.querySelectorAll('.checklist-label').forEach(l => l.classList.remove('selecionado'));
   document.getElementById('btn-registrar').disabled = true;
   document.getElementById('btn-registrar').style.background = '#dadce0';
-  document.getElementById('upload-foto').classList.add('escondido');
+  
+  // Reset foto
   document.getElementById('preview-foto').classList.add('escondido');
+  document.getElementById('upload-foto').classList.add('obrigatorio');
   document.getElementById('upload-foto').classList.remove('ativo');
+  document.getElementById('status-foto').textContent = 'Foto obrigatória para todos os registros';
+  document.getElementById('status-foto').className = 'texto-obrigatorio';
+  document.getElementById('texto-foto-obrigatorio').textContent = '(OBRIGATÓRIO)';
 }
 
 function selecionarTipo(tipo, elemento) {
@@ -904,17 +947,9 @@ function selecionarTipo(tipo, elemento) {
   const btn = document.getElementById('btn-registrar');
   btn.disabled = false;
   btn.style.background = '#1a73e8';
-  
-  // Mostra upload de foto apenas para ronda
-  if (tipo === 'ronda') {
-    document.getElementById('upload-foto').classList.remove('escondido');
-  } else {
-    document.getElementById('upload-foto').classList.add('escondido');
-    fotoBase64 = null;
-  }
 }
 
-function handleFoto(event) {
+function handleFoto(event, previewId, uploadId, statusId, textoId) {
   const file = event.target.files[0];
   if (!file) return;
   
@@ -926,9 +961,14 @@ function handleFoto(event) {
   const reader = new FileReader();
   reader.onload = function(e) {
     fotoBase64 = e.target.result;
-    document.getElementById('preview-foto').src = fotoBase64;
-    document.getElementById('preview-foto').classList.remove('escondido');
-    document.getElementById('upload-foto').classList.add('ativo');
+    document.getElementById(previewId).src = fotoBase64;
+    document.getElementById(previewId).classList.remove('escondido');
+    document.getElementById(uploadId).classList.add('ativo');
+    document.getElementById(uploadId).classList.remove('obrigatorio');
+    document.getElementById(statusId).textContent = '✓ Foto anexada';
+    document.getElementById(statusId).className = 'texto-opcional';
+    document.getElementById(statusId).style.color = '#137333';
+    document.getElementById(textoId).textContent = '(ANEXADA)';
   };
   reader.readAsDataURL(file);
 }
@@ -936,9 +976,10 @@ function handleFoto(event) {
 function confirmarRegistro() {
   if (!tipoSelecionado) return;
   
-  // Valida foto para ronda
-  if (tipoSelecionado === 'ronda' && !fotoBase64) {
-    mostrarMensagem('checklist', 'Obrigatório tirar foto para ronda de inspeção', 'erro');
+  // Valida foto obrigatória para operação
+  if (!fotoBase64) {
+    mostrarMensagem('checklist', 'Foto obrigatória! Tire uma foto para continuar.', 'erro');
+    document.getElementById('upload-foto').scrollIntoView({behavior: 'smooth'});
     return;
   }
   
@@ -946,19 +987,9 @@ function confirmarRegistro() {
   var horaCelular = agora.toISOString();
   
   document.getElementById('btn-registrar').style.display = 'none';
-  document.querySelector('.btn-secundario').style.display = 'none';
+  document.querySelector('#tela-checklist .btn-secundario').style.display = 'none';
   document.getElementById('loading-registro').style.display = 'block';
   document.getElementById('mensagem-checklist').innerHTML = '';
-  
-  var payload = {
-    acao: 'registro',
-    usuario: usuarioAtual,
-    local: local,
-    tipo: tipoSelecionado,
-    nivel: nivelAtual,
-    horaCelular: horaCelular,
-    foto: fotoBase64 || null
-  };
   
   fetch(URL_APPS_SCRIPT, {
     method: 'POST',
@@ -966,7 +997,15 @@ function confirmarRegistro() {
     headers: {
       'Content-Type': 'text/plain;charset=utf-8',
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      acao: 'registro',
+      usuario: usuarioAtual,
+      local: local,
+      tipo: tipoSelecionado,
+      nivel: nivelAtual,
+      horaCelular: horaCelular,
+      foto: fotoBase64
+    })
   })
   .then(r => r.text())
   .then(text => {
@@ -977,7 +1016,7 @@ function confirmarRegistro() {
         mostrarSucesso(resp);
       } else {
         document.getElementById('btn-registrar').style.display = 'block';
-        document.querySelector('.btn-secundario').style.display = 'block';
+        document.querySelector('#tela-checklist .btn-secundario').style.display = 'block';
         mostrarMensagem('checklist', resp.mensagem || 'Erro ao registrar', 'erro');
       }
     } catch (e) {
@@ -1015,7 +1054,7 @@ function confirmarRegistroGestao() {
       tipo: 'presenca',
       nivel: 'gestao',
       horaCelular: horaCelular,
-      foto: null
+      foto: fotoBase64 // Pode ser null (opcional)
     })
   })
   .then(r => r.text())
