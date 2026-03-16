@@ -1,20 +1,38 @@
 {
   "name": "Registro de Visitas",
   "short_name": "RegVisitas",
+  "description": "Sistema simples para registrar visitas de forma rápida e segura",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#1976d2",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Tela principal do Registro de Visitas"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "dir": "auto",
+  "lang": "pt-BR"
 }
